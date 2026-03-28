@@ -84,25 +84,4 @@ body {
 .bg-gradient-primary {
   background: var(--theme-gradient);
 }
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--theme-primary);
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--theme-secondary);
-  opacity: 0.8;
-}
 </style>

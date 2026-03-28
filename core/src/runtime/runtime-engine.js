@@ -120,8 +120,9 @@ function createRuntimeEngine(options = {}) {
       try {
         worker.process.send({ type: 'config_sync', config: snapshot })
       }
-      catch {
-        // ignore IPC failures for exited workers
+      catch (err) {
+        // Worker 进程已退出，IPC 通道关闭，记录警告便于排查
+        log('系统', `[broadcastConfig] 向账号 ${accId} 发送配置失败（worker 可能已退出）: ${err && err.message ? err.message : String(err)}`)
       }
     }
   }

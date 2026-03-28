@@ -1,9 +1,14 @@
-import { useStorage } from '@vueuse/core'
 import axios from 'axios'
 import { useToastStore } from '@/stores/toast'
 
-const tokenRef = useStorage('admin_token', '')
-const accountIdRef = useStorage('current_account_id', '')
+// 使用原生 localStorage 读取，避免在 Pinia/Vue app 初始化前调用 useStorage
+function getToken(): string {
+  return localStorage.getItem('admin_token') ?? ''
+}
+
+function getAccountId(): string {
+  return localStorage.getItem('current_account_id') ?? ''
+}
 
 const api = axios.create({
   baseURL: '/',
@@ -11,11 +16,11 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = tokenRef.value
+  const token = getToken()
   if (token) {
     config.headers['x-admin-token'] = token
   }
-  const accountId = accountIdRef.value
+  const accountId = getAccountId()
   if (accountId) {
     config.headers['x-account-id'] = accountId
   }

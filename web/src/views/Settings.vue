@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useIntervalFn } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref, watch, watchEffect } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api'
 import AccountModal from '@/components/AccountModal.vue'
@@ -378,7 +378,10 @@ const analyticsSortByMap: Record<string, string> = {
 
 const strategyPreviewLabel = ref<string | null>(null)
 
-watchEffect(async () => {
+// 防抖定时器，避免每次键入都触发 API 请求
+let _previewDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+async function updateStrategyPreview() {
   let strategy = localStrategySettings.value.plantingStrategy
   if (strategy === 'preferred') {
     strategyPreviewLabel.value = null
@@ -390,12 +393,7 @@ watchEffect(async () => {
       const preferredId = localStrategySettings.value.preferredSeedId
       if (preferredId > 0 && seeds.value) {
         const seed = seeds.value.find(s => s.seedId === preferredId)
-        if (seed) {
-          strategyPreviewLabel.value = `${seed.requiredLevel}级 ${seed.name}`
-        }
-        else {
-          strategyPreviewLabel.value = '未选择优先种子'
-        }
+        strategyPreviewLabel.value = seed ? `${seed.requiredLevel}级 ${seed.name}` : '未选择优先种子'
       }
       else {
         strategyPreviewLabel.value = '未选择优先种子'
@@ -436,7 +434,22 @@ watchEffect(async () => {
       strategyPreviewLabel.value = null
     }
   }
-})
+}
+
+watch(
+  () => JSON.stringify([
+    localStrategySettings.value.plantingStrategy,
+    localStrategySettings.value.bagSeedFallbackStrategy,
+    localStrategySettings.value.preferredSeedId,
+    seeds.value?.length,
+  ]),
+  () => {
+    if (_previewDebounceTimer)
+      clearTimeout(_previewDebounceTimer)
+    _previewDebounceTimer = setTimeout(() => updateStrategyPreview(), 400)
+  },
+  { immediate: true },
+)
 
 function syncLocalStrategySettings() {
   if (settings.value) {

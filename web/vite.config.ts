@@ -20,6 +20,13 @@ export default defineConfig({
       algorithm: 'gzip',
       ext: '.gz',
     }),
+    viteCompression({
+      verbose: false,
+      disable: false,
+      threshold: 10240,
+      algorithm: 'brotliCompress',
+      ext: '.br',
+    }),
     visualizer({
       open: false,
       gzipSize: true,
@@ -34,14 +41,15 @@ export default defineConfig({
             if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router') || id.includes('@vueuse')) {
               return 'vendor-vue'
             }
+            if (id.includes('socket.io-client') || id.includes('engine.io-client')) {
+              return 'vendor-socketio'
+            }
             if (id.includes('axios')) {
               return 'vendor-axios'
             }
-            // Split other large dependencies if needed
             if (id.includes('echarts') || id.includes('zrender')) {
               return 'vendor-echarts'
             }
-            // Default vendor chunk
             return 'vendor'
           }
         },

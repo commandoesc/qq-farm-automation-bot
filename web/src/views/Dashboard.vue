@@ -18,7 +18,6 @@ const toastStore = useToastStore()
 const {
   status,
   logs: statusLogs,
-  accountLogs: statusAccountLogs,
   realtimeConnected,
 } = storeToRefs(statusStore)
 const { currentAccountId, currentAccount } = storeToRefs(accountStore)
@@ -29,16 +28,8 @@ const lastBagFetchAt = ref(0)
 const clearingLogs = ref(false)
 
 const allLogs = computed(() => {
-  const sLogs = statusLogs.value || []
-  const aLogs = (statusAccountLogs.value || []).map((l: any) => ({
-    ts: new Date(l.time).getTime(),
-    time: l.time,
-    tag: l.action === 'Error' ? '错误' : '系统',
-    msg: l.reason ? `${l.msg} (${l.reason})` : l.msg,
-    isAccountLog: true,
-  }))
-
-  return [...sLogs, ...aLogs].sort((a: any, b: any) => a.ts - b.ts).filter((l: any) => !l.isAccountLog)
+  // 仅展示运行日志，accountLogs 在账号事件面板单独处理
+  return (statusLogs.value || []).slice().sort((a: any, b: any) => a.ts - b.ts)
 })
 
 const filter = reactive({
