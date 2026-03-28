@@ -38,7 +38,7 @@ api.interceptors.response.use((response) => {
     if (error.response.status === 401) {
       // Avoid redirect loop or multiple redirects
       if (!window.location.pathname.includes('/login')) {
-        tokenRef.value = ''
+        localStorage.removeItem('admin_token')
         window.location.href = '/login'
         toast.warning('登录已过期，请重新登录')
       }
