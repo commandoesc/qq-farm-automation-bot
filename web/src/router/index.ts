@@ -1,4 +1,3 @@
-import { useStorage } from '@vueuse/core'
 import axios from 'axios'
 import NProgress from 'nprogress'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -7,12 +6,25 @@ import 'nprogress/nprogress.css'
 
 NProgress.configure({ showSpinner: false })
 
-const adminToken = useStorage('admin_token', '')
+// 使用原生 localStorage 读写，避免在 Vue app 初始化前调用 useStorage
+function getAdminToken(): string {
+  return localStorage.getItem('admin_token') ?? ''
+}
+
+function setAdminToken(val: string) {
+  if (val) {
+    localStorage.setItem('admin_token', val)
+  }
+  else {
+    localStorage.removeItem('admin_token')
+  }
+}
+
 let validatedToken = ''
 let validatingPromise: Promise<boolean> | null = null
 
 async function ensureTokenValid() {
-  const token = String(adminToken.value || '').trim()
+  const token = getAdminToken().trim()
   if (!token)
     return false
 
@@ -61,26 +73,26 @@ router.beforeEach(async (to, _from) => {
   NProgress.start()
 
   if (to.name === 'login') {
-    if (!adminToken.value) {
+    if (!getAdminToken()) {
       validatedToken = ''
       return true
     }
     const valid = await ensureTokenValid()
     if (valid)
       return { name: 'dashboard' }
-    adminToken.value = ''
+    setAdminToken('')
     validatedToken = ''
     return true
   }
 
-  if (!adminToken.value) {
+  if (!getAdminToken()) {
     validatedToken = ''
     return { name: 'login' }
   }
 
   const valid = await ensureTokenValid()
   if (!valid) {
-    adminToken.value = ''
+    setAdminToken('')
     validatedToken = ''
     return { name: 'login' }
   }
